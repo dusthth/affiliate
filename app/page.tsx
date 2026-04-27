@@ -2,6 +2,8 @@ import Image from 'next/image'
 import { readProducts } from '@/lib/products'
 import type { ShopeeProduct } from '@/lib/shopee'
 
+export const dynamic = 'force-dynamic'
+
 function discount(price: number, original: number) {
   if (!original || original <= price) return 0
   return Math.round((1 - price / original) * 100)
