@@ -13,7 +13,7 @@ export async function OPTIONS() {
 }
 
 export async function GET() {
-  return Response.json(readProducts(), { headers: CORS })
+  return Response.json(await readProducts(), { headers: CORS })
 }
 
 export async function POST(req: NextRequest) {
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       shopeeUrl,
       addedAt: new Date().toISOString(),
     }
-    saveProduct(product)
+    await saveProduct(product)
     return Response.json(product, { status: 201, headers: CORS })
   } catch (err) {
     return Response.json({ error: err instanceof Error ? err.message : 'Lỗi' }, { status: 500, headers: CORS })
@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const { id, ...patch } = await req.json() as Partial<ShopeeProduct> & { id: string }
     if (!id) return Response.json({ error: 'Thiếu id' }, { status: 400, headers: CORS })
-    const updated = updateProduct(id, patch)
+    const updated = await updateProduct(id, patch)
     if (!updated) return Response.json({ error: 'Không tìm thấy sản phẩm' }, { status: 404, headers: CORS })
     return Response.json(updated, { headers: CORS })
   } catch (err) {
@@ -60,7 +60,7 @@ export async function DELETE(req: NextRequest) {
   try {
     const { id } = await req.json()
     if (!id) return Response.json({ error: 'Thiếu id' }, { status: 400, headers: CORS })
-    deleteProduct(id)
+    await deleteProduct(id)
     return Response.json({ ok: true }, { headers: CORS })
   } catch (err) {
     return Response.json({ error: err instanceof Error ? err.message : 'Lỗi' }, { status: 500, headers: CORS })

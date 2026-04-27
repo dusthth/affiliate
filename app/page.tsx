@@ -21,7 +21,6 @@ function ProductCard({ p }: { p: ShopeeProduct }) {
       rel="noopener noreferrer"
       className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-200 flex flex-col"
     >
-      {/* Image */}
       <div className="relative aspect-square bg-gray-100 overflow-hidden">
         {p.image ? (
           <Image
@@ -41,7 +40,6 @@ function ProductCard({ p }: { p: ShopeeProduct }) {
         )}
       </div>
 
-      {/* Info */}
       <div className="p-3 flex flex-col gap-1 flex-1">
         <p className="text-sm text-gray-800 font-medium line-clamp-2 leading-snug flex-1 min-h-[2.5rem]">
           {p.name}
@@ -66,8 +64,8 @@ function ProductCard({ p }: { p: ShopeeProduct }) {
   )
 }
 
-export default function Home() {
-  const products = readProducts()
+export default async function Home() {
+  const products = await readProducts()
 
   return (
     <main className="max-w-5xl mx-auto px-3 py-5">
