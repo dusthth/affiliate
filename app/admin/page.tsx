@@ -54,46 +54,50 @@ function BookmarkletSetup() {
     <div className="bg-white rounded-2xl shadow-sm p-6 mb-8 space-y-5">
       <h2 className="text-base font-bold text-gray-700">Cài Bookmarklet</h2>
 
-      {/* Drag target */}
-      <div className="border-2 border-dashed border-gray-200 rounded-2xl p-5 text-center space-y-3">
-        <p className="text-sm text-gray-500">Kéo nút này vào thanh bookmark của trình duyệt</p>
-        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-        {/* @ts-ignore */}
-        <a href={bm}
-          className="inline-block bg-[#ee4d2d] text-white text-sm font-bold px-5 py-2.5 rounded-xl cursor-grab select-none"
-          onClick={e => e.preventDefault()}>
-          🛍️ Thêm Shopee
-        </a>
-        <p className="text-xs text-gray-400">Nếu kéo không được → dùng cách bên dưới</p>
-      </div>
-
-      {/* Manual add */}
-      <div className="space-y-2">
-        <p className="text-sm font-semibold text-gray-600">Thêm thủ công (Chrome/Edge):</p>
-        <ol className="text-sm text-gray-500 space-y-1 list-decimal list-inside">
-          <li>Chuột phải thanh bookmark → <strong>Thêm trang mới</strong></li>
-          <li>Tên: <strong>Thêm Shopee</strong></li>
-          <li>URL: copy đoạn code bên dưới rồi dán vào</li>
-        </ol>
+      {/* Step 1 */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <span className="w-6 h-6 rounded-full bg-[#ee4d2d] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
+          <p className="text-sm font-semibold text-gray-700">Copy đoạn code bên dưới</p>
+        </div>
         <div className="relative">
           <textarea readOnly value={bm} rows={3}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-mono text-gray-500 resize-none focus:outline-none bg-gray-50" />
+            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-mono text-gray-400 resize-none focus:outline-none bg-gray-50" />
           <button onClick={copy}
-            className="absolute right-2 top-2 text-xs bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors font-medium">
+            className={`absolute right-2 top-2 text-xs border rounded-lg px-3 py-1.5 transition-colors font-semibold ${
+              copied ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-600'
+            }`}>
             {copied ? '✓ Đã copy' : 'Copy'}
           </button>
         </div>
       </div>
 
+      {/* Step 2 */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <span className="w-6 h-6 rounded-full bg-[#ee4d2d] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
+          <p className="text-sm font-semibold text-gray-700">Thêm vào bookmark (Chrome / Edge)</p>
+        </div>
+        <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm text-gray-600">
+          <p>① Chuột phải vào thanh bookmark → <strong>Thêm trang mới</strong></p>
+          <p>② Điền tên: <strong>Thêm Shopee</strong></p>
+          <p>③ Xoá hết trong ô URL → dán code vừa copy vào → Lưu</p>
+        </div>
+        <p className="text-xs text-gray-400 px-1">Hoặc chuột phải vào nút bên dưới → <strong>Lưu liên kết dưới dạng dấu trang</strong></p>
+        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+        {/* @ts-ignore – javascript: href is intentional for bookmarklet */}
+        <a href={bm} onClick={e => e.preventDefault()}
+          className="inline-flex items-center gap-2 bg-[#ee4d2d] text-white text-sm font-bold px-5 py-2.5 rounded-xl select-none">
+          🛍️ Thêm Shopee
+        </a>
+      </div>
+
       {/* How to use */}
-      <div className="bg-orange-50 rounded-xl p-4 space-y-2">
-        <p className="text-sm font-bold text-orange-700">Cách dùng</p>
-        <ol className="text-sm text-orange-700 space-y-1 list-decimal list-inside">
-          <li>Vào trang sản phẩm bất kỳ trên Shopee</li>
-          <li>Click bookmark <strong>🛍️ Thêm Shopee</strong></li>
-          <li>Popup hiện ra với tên, ảnh, giá đã điền sẵn</li>
-          <li>Kiểm tra, chỉnh sửa nếu cần → <strong>Đăng sản phẩm</strong></li>
-        </ol>
+      <div className="bg-orange-50 rounded-xl p-4 space-y-1.5">
+        <p className="text-sm font-bold text-orange-700 mb-2">Sau khi cài xong — cách dùng</p>
+        <p className="text-sm text-orange-700">① Vào trang sản phẩm bất kỳ trên Shopee</p>
+        <p className="text-sm text-orange-700">② Click bookmark <strong>🛍️ Thêm Shopee</strong></p>
+        <p className="text-sm text-orange-700">③ Popup hiện ra, kiểm tra thông tin → <strong>Đăng sản phẩm</strong></p>
       </div>
     </div>
   )
