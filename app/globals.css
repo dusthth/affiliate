@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-shopee: #ee4d2d;
+  --color-shopee-dark: #d73211;
+}
+
+* {
+  box-sizing: border-box;
+}
