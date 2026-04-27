@@ -120,8 +120,12 @@ function showForm(product, apiUrl) {
             shopeeUrl: product.url,
           }),
         })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error)
+        const text = await res.text()
+        if (!text) throw new Error(`HTTP ${res.status} – Response rỗng. Kiểm tra API URL và Vercel logs.`)
+        let data
+        try { data = JSON.parse(text) }
+        catch { throw new Error(`HTTP ${res.status} – Không phải JSON: ${text.slice(0, 80)}`) }
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
         showMsg(msg, 'ok', '✓ Đã đăng: ' + data.name)
         btn.textContent = '✓ Thành công!'
       } catch (e) {
