@@ -29,111 +29,13 @@ function makeId(url: string) {
 
 const BLANK = { shopeeUrl: '', image: '', name: '', description: '', price: '', priceOriginal: '' }
 
-// ---------- Extension setup ----------
-function ExtensionSetup() {
-  const [apiUrl, setApiUrl] = useState('')
-  const [copied, setCopied] = useState(false)
-
-  useEffect(() => { setApiUrl(window.location.origin + '/api/products') }, [])
-
-  function copy() {
-    navigator.clipboard.writeText(apiUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="bg-white rounded-2xl shadow-sm p-6 mb-8 space-y-5">
-      <h2 className="text-base font-bold text-gray-700">Cài Extension (Chrome / Edge)</h2>
-
-      {/* Step 1 */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-[#ee4d2d] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
-          <p className="text-sm font-semibold text-gray-700">Tải thư mục extension về máy</p>
-        </div>
-        <div className="bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-600">
-          Thư mục <code className="bg-gray-200 px-1.5 py-0.5 rounded text-xs font-mono">extension/</code> nằm trong repo GitHub của dự án này.
-          Clone hoặc download ZIP → giải nén.
-        </div>
-      </div>
-
-      {/* Step 2 */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-[#ee4d2d] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
-          <p className="text-sm font-semibold text-gray-700">Load extension vào Chrome / Edge</p>
-        </div>
-        <div className="bg-gray-50 rounded-xl px-4 py-3 space-y-1.5 text-sm text-gray-600">
-          <p>① Mở <code className="bg-gray-200 px-1 rounded text-xs">chrome://extensions</code></p>
-          <p>② Bật <strong>Developer mode</strong> (góc trên phải)</p>
-          <p>③ Click <strong>Load unpacked</strong> → chọn thư mục <code className="bg-gray-200 px-1 rounded text-xs">extension/</code></p>
-        </div>
-      </div>
-
-      {/* Step 3 */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-[#ee4d2d] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
-          <p className="text-sm font-semibold text-gray-700">Cấu hình API URL (làm 1 lần)</p>
-        </div>
-        <p className="text-sm text-gray-500">Copy URL bên dưới, sau đó dán vào extension khi nó hỏi:</p>
-        <div className="flex gap-2">
-          <code className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-mono text-gray-600 break-all">
-            {apiUrl}
-          </code>
-          <button onClick={copy}
-            className={`flex-shrink-0 text-xs border rounded-xl px-4 font-semibold transition-colors ${
-              copied ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-600'
-            }`}>
-            {copied ? '✓' : 'Copy'}
-          </button>
-        </div>
-      </div>
-
-      {/* How to use */}
-      <div className="bg-orange-50 rounded-xl p-4 space-y-1.5">
-        <p className="text-sm font-bold text-orange-700 mb-2">Sau khi cài — cách dùng mỗi ngày</p>
-        <p className="text-sm text-orange-700">① Vào trang sản phẩm bất kỳ trên Shopee</p>
-        <p className="text-sm text-orange-700">② Click icon 🛍️ trên thanh công cụ trình duyệt</p>
-        <p className="text-sm text-orange-700">③ Popup hiện ra với tên, ảnh, giá đã điền sẵn</p>
-        <p className="text-sm text-orange-700">④ Kiểm tra, sửa nếu cần → <strong>Đăng sản phẩm</strong></p>
-      </div>
-    </div>
-  )
-}
-
 // ---------- Add form ----------
 function AddForm({ onAdded }: { onAdded: () => void }) {
   const [f, setF] = useState(BLANK)
   const [saving, setSaving] = useState(false)
-  const [fetching, setFetching] = useState(false)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
 
   const set = (k: keyof typeof BLANK, v: string) => setF(p => ({ ...p, [k]: v }))
-
-  async function autoFill() {
-    const url = f.shopeeUrl.trim()
-    if (!isValidUrl(url)) { setMsg({ ok: false, text: 'Nhập link Shopee trước' }); return }
-    setFetching(true); setMsg(null)
-    try {
-      const res = await fetch(`/api/fetch-product?url=${encodeURIComponent(url)}`)
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      const filled: string[] = []
-      setF(p => {
-        const next = { ...p }
-        if (data.name)  { next.name = data.name;              filled.push('tên') }
-        if (data.image) { next.image = data.image;            filled.push('ảnh') }
-        if (data.description) next.description = data.description
-        if (data.price) { next.price = String(data.price);   filled.push('giá') }
-        return next
-      })
-      setMsg({ ok: true, text: `Đã điền: ${filled.join(', ') || '(không có dữ liệu)'}` })
-    } catch (err) {
-      setMsg({ ok: false, text: 'Không tự lấy được — nhập thủ công nhé' })
-    } finally { setFetching(false) }
-  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -167,24 +69,16 @@ function AddForm({ onAdded }: { onAdded: () => void }) {
 
   return (
     <form onSubmit={submit} className="bg-white rounded-2xl shadow-sm p-6 mb-8 space-y-4">
+      <h2 className="text-base font-bold text-gray-700">Thêm sản phẩm mới</h2>
+
       {msg && (
         <div className={`rounded-xl px-4 py-3 text-sm ${msg.ok ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
           {msg.ok ? '✓ ' : '✗ '}{msg.text}
         </div>
       )}
 
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Link Shopee *</label>
-        <div className="flex gap-2">
-          <input value={f.shopeeUrl} onChange={e => set('shopeeUrl', e.target.value)}
-            placeholder="https://shopee.vn/..."
-            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ee4d2d]" />
-          <button type="button" onClick={autoFill} disabled={fetching || !f.shopeeUrl.trim()}
-            className="flex-shrink-0 bg-orange-50 text-orange-600 border border-orange-200 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-orange-100 disabled:opacity-40 transition-colors whitespace-nowrap">
-            {fetching ? '...' : '✨ Tự động'}
-          </button>
-        </div>
-      </div>
+      <Field label="Link Shopee *" value={f.shopeeUrl} onChange={v => set('shopeeUrl', v)}
+        placeholder="https://shopee.vn/... hoặc https://shp.ee/..." />
 
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1.5">Link hình ảnh</label>
@@ -337,7 +231,6 @@ export default function AdminPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
-  const [tab, setTab] = useState<'manual' | 'bookmarklet'>('manual')
   const router = useRouter()
 
   const supabase = createBrowserClient(
@@ -398,23 +291,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-4">
-          <button onClick={() => setTab('manual')}
-            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              tab === 'manual' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}>
-            ✏️ Nhập tay
-          </button>
-          <button onClick={() => setTab('bookmarklet')}
-            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              tab === 'bookmarklet' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}>
-            🧩 Extension
-          </button>
-        </div>
-
-        {tab === 'manual' ? <AddForm onAdded={load} /> : <ExtensionSetup />}
+        <AddForm onAdded={load} />
 
         {/* Product list */}
         <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
