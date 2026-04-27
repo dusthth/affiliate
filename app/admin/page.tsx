@@ -29,46 +29,32 @@ function makeId(url: string) {
 
 const BLANK = { shopeeUrl: '', image: '', name: '', description: '', price: '', priceOriginal: '' }
 
-// ---------- Bookmarklet builder ----------
-function buildBookmarklet(apiUrl: string): string {
-  const code = `(function(){var A="${apiUrl}";if(!location.hostname.includes("shopee")){alert("Chỉ dùng được trên trang Shopee!");return;}function m(p){var e=document.querySelector('meta[property="og:'+p+'"]')||document.querySelector('meta[property="product:'+p+'"]');return e?e.content:"";}var name=m("title")||document.title.replace(/\\s*[|–-].*/,"").trim(),image=m("image"),desc=m("description"),url=location.href.split("?")[0],price=0,pa=m("price:amount");if(pa)price=Math.round(parseFloat(pa));if(!price){try{var ld=document.querySelector('script[type="application/ld+json"]');if(ld){var d=JSON.parse(ld.textContent);if(d.offers&&d.offers.price)price=Math.round(parseFloat(d.offers.price));}}catch(e){}}var mr=url.match(/[.-](\\d{6,12})\\.(\\d{6,15})(?:[?#]|$)/),id=mr?(mr[1]+"-"+mr[2]):Date.now().toString(36),ex=document.getElementById("__sbm");if(ex)ex.remove();var div=document.createElement("div");div.id="__sbm";div.innerHTML='<div style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:16px"><div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:400px;font-family:system-ui,sans-serif;box-shadow:0 24px 80px rgba(0,0,0,.3)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><span style="font-size:15px;font-weight:700">🛍️ Thêm sản phẩm</span><span id="__sx" style="cursor:pointer;font-size:22px;color:#aaa;line-height:1">×</span></div><div id="__sm" style="display:none;padding:10px;border-radius:8px;font-size:13px;margin-bottom:12px"></div><div style="display:flex;gap:10px;margin-bottom:12px"><div style="width:64px;height:64px;border-radius:10px;overflow:hidden;background:#f5f5f5;flex-shrink:0"><img id="__sth" style="width:100%;height:100%;object-fit:cover;display:none" src=""></div><div style="flex:1"><div style="font-size:11px;font-weight:700;color:#888;margin-bottom:4px">LINK ẢNH</div><input id="__si" placeholder="https://cf.shopee.vn/..." style="width:100%;box-sizing:border-box;border:1px solid #ddd;border-radius:8px;padding:7px 10px;font-size:12px"></div></div><div style="font-size:11px;font-weight:700;color:#888;margin-bottom:4px">TÊN SẢN PHẨM</div><input id="__sn" style="width:100%;box-sizing:border-box;border:1px solid #ddd;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:10px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px"><div><div style="font-size:11px;font-weight:700;color:#888;margin-bottom:4px">GIÁ BÁN (đ)</div><input id="__sp" type="number" style="width:100%;box-sizing:border-box;border:1px solid #ddd;border-radius:8px;padding:8px 12px;font-size:13px"></div><div><div style="font-size:11px;font-weight:700;color:#888;margin-bottom:4px">GIÁ GỐC (đ)</div><input id="__so" type="number" style="width:100%;box-sizing:border-box;border:1px solid #ddd;border-radius:8px;padding:8px 12px;font-size:13px"></div></div><button id="__sb" style="width:100%;background:#ee4d2d;color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer">Đăng sản phẩm</button></div></div>';document.body.appendChild(div);var ni=document.getElementById("__sn"),ii=document.getElementById("__si"),th=document.getElementById("__sth"),pi=document.getElementById("__sp"),oi=document.getElementById("__so");ni.value=name;ii.value=image;if(image){th.src=image;th.style.display="block";}pi.value=price||"";ii.addEventListener("input",function(){th.src=ii.value;th.style.display=ii.value?"block":"none";});function close(){div.remove();}document.getElementById("__sx").addEventListener("click",close);div.firstElementChild.addEventListener("click",function(e){if(e.target===this)close();});document.getElementById("__sb").addEventListener("click",function(){var btn=document.getElementById("__sb"),msg=document.getElementById("__sm"),nv=ni.value.trim();if(!nv){msg.textContent="Vui lòng nhập tên sản phẩm";msg.style.cssText="display:block;background:#fee2e2;color:#dc2626;padding:10px;border-radius:8px;font-size:13px;margin-bottom:12px";return;}btn.textContent="Đang đăng...";btn.disabled=true;fetch(A,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:id,itemid:0,shopid:0,name:nv,image:ii.value.trim(),description:desc,price:parseInt(pi.value)||0,priceOriginal:parseInt(oi.value)||0,shopeeUrl:url})}).then(function(r){return r.json();}).then(function(data){if(data.error)throw new Error(data.error);msg.textContent="✓ Đã đăng: "+data.name;msg.style.cssText="display:block;background:#dcfce7;color:#16a34a;padding:10px;border-radius:8px;font-size:13px;margin-bottom:12px";btn.textContent="✓ Thành công!";setTimeout(close,1800);}).catch(function(e){msg.textContent="✗ "+e.message;msg.style.cssText="display:block;background:#fee2e2;color:#dc2626;padding:10px;border-radius:8px;font-size:13px;margin-bottom:12px";btn.textContent="Đăng sản phẩm";btn.disabled=false;});});})();`
-  return 'javascript:' + encodeURIComponent(code)
-}
-
-// ---------- Bookmarklet setup ----------
-function BookmarkletSetup() {
-  const [bm, setBm] = useState('')
+// ---------- Extension setup ----------
+function ExtensionSetup() {
+  const [apiUrl, setApiUrl] = useState('')
   const [copied, setCopied] = useState(false)
 
-  useEffect(() => {
-    setBm(buildBookmarklet(window.location.origin + '/api/products'))
-  }, [])
+  useEffect(() => { setApiUrl(window.location.origin + '/api/products') }, [])
 
   function copy() {
-    navigator.clipboard.writeText(bm)
+    navigator.clipboard.writeText(apiUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6 mb-8 space-y-5">
-      <h2 className="text-base font-bold text-gray-700">Cài Bookmarklet</h2>
+      <h2 className="text-base font-bold text-gray-700">Cài Extension (Chrome / Edge)</h2>
 
       {/* Step 1 */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <div className="flex items-center gap-2">
           <span className="w-6 h-6 rounded-full bg-[#ee4d2d] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
-          <p className="text-sm font-semibold text-gray-700">Copy đoạn code bên dưới</p>
+          <p className="text-sm font-semibold text-gray-700">Tải thư mục extension về máy</p>
         </div>
-        <div className="relative">
-          <textarea readOnly value={bm} rows={3}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-mono text-gray-400 resize-none focus:outline-none bg-gray-50" />
-          <button onClick={copy}
-            className={`absolute right-2 top-2 text-xs border rounded-lg px-3 py-1.5 transition-colors font-semibold ${
-              copied ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-600'
-            }`}>
-            {copied ? '✓ Đã copy' : 'Copy'}
-          </button>
+        <div className="bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-600">
+          Thư mục <code className="bg-gray-200 px-1.5 py-0.5 rounded text-xs font-mono">extension/</code> nằm trong repo GitHub của dự án này.
+          Clone hoặc download ZIP → giải nén.
         </div>
       </div>
 
@@ -76,28 +62,42 @@ function BookmarkletSetup() {
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <span className="w-6 h-6 rounded-full bg-[#ee4d2d] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
-          <p className="text-sm font-semibold text-gray-700">Thêm vào bookmark (Chrome / Edge)</p>
+          <p className="text-sm font-semibold text-gray-700">Load extension vào Chrome / Edge</p>
         </div>
-        <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm text-gray-600">
-          <p>① Chuột phải vào thanh bookmark → <strong>Thêm trang mới</strong></p>
-          <p>② Điền tên: <strong>Thêm Shopee</strong></p>
-          <p>③ Xoá hết trong ô URL → dán code vừa copy vào → Lưu</p>
+        <div className="bg-gray-50 rounded-xl px-4 py-3 space-y-1.5 text-sm text-gray-600">
+          <p>① Mở <code className="bg-gray-200 px-1 rounded text-xs">chrome://extensions</code></p>
+          <p>② Bật <strong>Developer mode</strong> (góc trên phải)</p>
+          <p>③ Click <strong>Load unpacked</strong> → chọn thư mục <code className="bg-gray-200 px-1 rounded text-xs">extension/</code></p>
         </div>
-        <p className="text-xs text-gray-400 px-1">Hoặc chuột phải vào nút bên dưới → <strong>Lưu liên kết dưới dạng dấu trang</strong></p>
-        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-        {/* @ts-ignore – javascript: href is intentional for bookmarklet */}
-        <a href={bm} onClick={e => e.preventDefault()}
-          className="inline-flex items-center gap-2 bg-[#ee4d2d] text-white text-sm font-bold px-5 py-2.5 rounded-xl select-none">
-          🛍️ Thêm Shopee
-        </a>
+      </div>
+
+      {/* Step 3 */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <span className="w-6 h-6 rounded-full bg-[#ee4d2d] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
+          <p className="text-sm font-semibold text-gray-700">Cấu hình API URL (làm 1 lần)</p>
+        </div>
+        <p className="text-sm text-gray-500">Copy URL bên dưới, sau đó dán vào extension khi nó hỏi:</p>
+        <div className="flex gap-2">
+          <code className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-mono text-gray-600 break-all">
+            {apiUrl}
+          </code>
+          <button onClick={copy}
+            className={`flex-shrink-0 text-xs border rounded-xl px-4 font-semibold transition-colors ${
+              copied ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-600'
+            }`}>
+            {copied ? '✓' : 'Copy'}
+          </button>
+        </div>
       </div>
 
       {/* How to use */}
       <div className="bg-orange-50 rounded-xl p-4 space-y-1.5">
-        <p className="text-sm font-bold text-orange-700 mb-2">Sau khi cài xong — cách dùng</p>
+        <p className="text-sm font-bold text-orange-700 mb-2">Sau khi cài — cách dùng mỗi ngày</p>
         <p className="text-sm text-orange-700">① Vào trang sản phẩm bất kỳ trên Shopee</p>
-        <p className="text-sm text-orange-700">② Click bookmark <strong>🛍️ Thêm Shopee</strong></p>
-        <p className="text-sm text-orange-700">③ Popup hiện ra, kiểm tra thông tin → <strong>Đăng sản phẩm</strong></p>
+        <p className="text-sm text-orange-700">② Click icon 🛍️ trên thanh công cụ trình duyệt</p>
+        <p className="text-sm text-orange-700">③ Popup hiện ra với tên, ảnh, giá đã điền sẵn</p>
+        <p className="text-sm text-orange-700">④ Kiểm tra, sửa nếu cần → <strong>Đăng sản phẩm</strong></p>
       </div>
     </div>
   )
@@ -376,11 +376,11 @@ export default function AdminPage() {
             className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
               tab === 'bookmarklet' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'
             }`}>
-            🔖 Bookmarklet
+            🧩 Extension
           </button>
         </div>
 
-        {tab === 'manual' ? <AddForm onAdded={load} /> : <BookmarkletSetup />}
+        {tab === 'manual' ? <AddForm onAdded={load} /> : <ExtensionSetup />}
 
         {/* Product list */}
         <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
