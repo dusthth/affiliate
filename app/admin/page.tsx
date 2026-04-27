@@ -107,9 +107,31 @@ function ExtensionSetup() {
 function AddForm({ onAdded }: { onAdded: () => void }) {
   const [f, setF] = useState(BLANK)
   const [saving, setSaving] = useState(false)
+  const [fetching, setFetching] = useState(false)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
 
   const set = (k: keyof typeof BLANK, v: string) => setF(p => ({ ...p, [k]: v }))
+
+  async function autoFill() {
+    const url = f.shopeeUrl.trim()
+    if (!isValidUrl(url)) { setMsg({ ok: false, text: 'Nhập link Shopee trước' }); return }
+    setFetching(true); setMsg(null)
+    try {
+      const res = await fetch(`/api/fetch-product?url=${encodeURIComponent(url)}`)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setF(p => ({
+        ...p,
+        name: data.name || p.name,
+        image: data.image || p.image,
+        description: data.description || p.description,
+        price: data.price ? String(data.price) : p.price,
+      }))
+      setMsg({ ok: true, text: 'Đã điền thông tin tự động' })
+    } catch (err) {
+      setMsg({ ok: false, text: 'Không tự lấy được — nhập thủ công nhé' })
+    } finally { setFetching(false) }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -149,8 +171,18 @@ function AddForm({ onAdded }: { onAdded: () => void }) {
         </div>
       )}
 
-      <Field label="Link Shopee *" value={f.shopeeUrl} onChange={v => set('shopeeUrl', v)}
-        placeholder="https://shopee.vn/... hoặc https://shp.ee/..." />
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Link Shopee *</label>
+        <div className="flex gap-2">
+          <input value={f.shopeeUrl} onChange={e => set('shopeeUrl', e.target.value)}
+            placeholder="https://shopee.vn/..."
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#ee4d2d]" />
+          <button type="button" onClick={autoFill} disabled={fetching || !f.shopeeUrl.trim()}
+            className="flex-shrink-0 bg-orange-50 text-orange-600 border border-orange-200 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-orange-100 disabled:opacity-40 transition-colors whitespace-nowrap">
+            {fetching ? '...' : '✨ Tự động'}
+          </button>
+        </div>
+      </div>
 
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1.5">Link hình ảnh</label>
