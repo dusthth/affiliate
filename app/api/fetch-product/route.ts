@@ -10,29 +10,55 @@ export async function GET(req: NextRequest) {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'vi-VN,vi;q=0.9',
-        'Cache-Control': 'no-cache',
+        'Referer': 'https://shopee.vn/',
       },
     })
 
-    if (!res.ok) return Response.json({ error: `Shopee trả về ${res.status}` }, { status: 502 })
+    if (!res.ok) return Response.json({ error: `HTTP ${res.status}` }, { status: 502 })
 
     const html = await res.text()
 
-    function og(prop: string) {
-      const m = html.match(new RegExp(
-        `<meta[^>]+property=["']og:${prop}["'][^>]+content=["']([^"']+)["']`, 'i'
-      )) || html.match(new RegExp(
-        `<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:${prop}["']`, 'i'
-      ))
-      return m ? m[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"').trim() : ''
+    // Extract meta tag with any attribute order and optional extra attrs like data-rh
+    function og(prop: string): string {
+      const escaped = prop.replace('.', '\\.')
+      const patterns = [
+        new RegExp(`<meta[^>]*property=["']og:${escaped}["'][^>]*content=["']([^"']+)["']`, 'i'),
+        new RegExp(`<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:${escaped}["']`, 'i'),
+        new RegExp(`<meta[^>]*name=["']og:${escaped}["'][^>]*content=["']([^"']+)["']`, 'i'),
+      ]
+      for (const re of patterns) {
+        const m = html.match(re)
+        if (m?.[1]) return m[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim()
+      }
+      return ''
     }
 
-    const name = og('title').replace(/\s*[|\-–].*Shopee.*$/i, '').trim()
-    const image = og('image')
-    const description = og('description')
+    // Try JSON-LD (more reliable than meta tags)
+    let ldName = '', ldImage = '', ldPrice = 0
+    const ldMatch = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i)
+    if (ldMatch) {
+      try {
+        const ld = JSON.parse(ldMatch[1])
+        ldName = ld.name || ''
+        ldImage = Array.isArray(ld.image) ? ld.image[0] : (ld.image || '')
+        if (ld.offers?.price) ldPrice = Math.round(parseFloat(ld.offers.price))
+      } catch {}
+    }
 
-    const priceMatch = html.match(/"price"\s*:\s*"?([\d.]+)"?/)
-    const price = priceMatch ? Math.round(parseFloat(priceMatch[1])) : 0
+    // Try inline JSON state (Shopee embeds product data as window.__INITIAL_STATE__)
+    let statePrice = 0
+    const priceMatch = html.match(/"price_min_before_discount"\s*:\s*(\d+)/)
+                    || html.match(/"price"\s*:\s*(\d{4,})/)
+    if (priceMatch) statePrice = Math.round(parseInt(priceMatch[1]) / 100000) * 1000
+
+    const name = ldName || og('title').replace(/\s*[|\-–].*Shopee.*$/i, '').trim()
+    const image = ldImage || og('image')
+    const description = og('description')
+    const price = ldPrice || statePrice
+
+    if (!name && !image) {
+      return Response.json({ error: 'Shopee không trả về thông tin sản phẩm (có thể bị chặn)' }, { status: 422 })
+    }
 
     return Response.json({ name, image, description, price })
   } catch (err) {

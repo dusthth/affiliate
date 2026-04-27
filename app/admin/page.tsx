@@ -120,14 +120,16 @@ function AddForm({ onAdded }: { onAdded: () => void }) {
       const res = await fetch(`/api/fetch-product?url=${encodeURIComponent(url)}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setF(p => ({
-        ...p,
-        name: data.name || p.name,
-        image: data.image || p.image,
-        description: data.description || p.description,
-        price: data.price ? String(data.price) : p.price,
-      }))
-      setMsg({ ok: true, text: 'Đã điền thông tin tự động' })
+      const filled: string[] = []
+      setF(p => {
+        const next = { ...p }
+        if (data.name)  { next.name = data.name;              filled.push('tên') }
+        if (data.image) { next.image = data.image;            filled.push('ảnh') }
+        if (data.description) next.description = data.description
+        if (data.price) { next.price = String(data.price);   filled.push('giá') }
+        return next
+      })
+      setMsg({ ok: true, text: `Đã điền: ${filled.join(', ') || '(không có dữ liệu)'}` })
     } catch (err) {
       setMsg({ ok: false, text: 'Không tự lấy được — nhập thủ công nhé' })
     } finally { setFetching(false) }
