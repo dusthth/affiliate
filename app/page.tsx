@@ -15,37 +15,37 @@ function fmt(n: number) {
 
 function ProductCard({ p }: { p: ShopeeProduct }) {
   const pct = discount(p.price, p.priceOriginal)
+  const href = `/api/go/${p.id}`
 
   return (
-    <a
-      href={`/api/go/${p.id}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-200 flex flex-col"
-    >
-      <div className="relative aspect-square bg-gray-100 overflow-hidden">
-        {p.image ? (
-          <Image
-            src={p.image}
-            alt={p.name}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-200 text-5xl">🛍️</div>
-        )}
-        {pct > 0 && (
-          <span className="absolute top-2 right-2 bg-[#ee4d2d] text-white text-xs font-bold px-2 py-0.5 rounded-full">
-            GIẢM {pct}%
-          </span>
-        )}
-      </div>
+    <div className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-200 flex flex-col">
+      <a href={href} target="_blank" rel="noopener noreferrer" className="block">
+        <div className="relative aspect-square bg-gray-100 overflow-hidden">
+          {p.image ? (
+            <Image
+              src={p.image}
+              alt={p.name}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-gray-200 text-5xl">🛍️</div>
+          )}
+          {pct > 0 && (
+            <span className="absolute top-2 right-2 bg-[#ee4d2d] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+              GIẢM {pct}%
+            </span>
+          )}
+        </div>
+      </a>
 
       <div className="p-3 flex flex-col gap-1 flex-1">
-        <p className="text-sm text-gray-800 font-medium line-clamp-2 leading-snug flex-1 min-h-[2.5rem]">
-          {p.name}
-        </p>
+        <a href={href} target="_blank" rel="noopener noreferrer">
+          <p className="text-sm text-gray-800 font-medium line-clamp-2 leading-snug min-h-[2.5rem] hover:text-[#ee4d2d] transition-colors">
+            {p.name}
+          </p>
+        </a>
 
         {p.description && (
           <p className="text-xs text-gray-400 line-clamp-1">{p.description}</p>
@@ -61,8 +61,13 @@ function ProductCard({ p }: { p: ShopeeProduct }) {
             </span>
           )}
         </div>
+
+        <a href={href} target="_blank" rel="noopener noreferrer"
+          className="mt-2 block w-full text-center bg-[#ee4d2d] hover:bg-[#d73211] text-white text-xs font-bold py-2 rounded-xl transition-colors">
+          Mua ngay
+        </a>
       </div>
-    </a>
+    </div>
   )
 }
 
